@@ -1,11 +1,17 @@
 #include <sys/epoll.h>
 #include <iostream>
-#include "POLLER.hpp"
 #include <map>
 #include <vector>
+#include "POLLER.hpp"
 Poller::Poller(int maxsize)
 {
   epfd_=epoll_create1(maxsize);
+  assert(!pipe(awakefd));
+  epoll_event temp;
+  temp.data.fd=awakefd[0];
+  temp.events|=EPOLLIN;
+  temp.events|=EPOLLET;
+  assert(!epoll_ctl(epfd_,EPOLL_CTL_ADD,awakefd[0],&temp));
   handlenums=0;
 }
 Poller::~Poller()
@@ -16,6 +22,11 @@ Poller::~Poller()
   {
       (*it).second->~Channel();
   }
+}
+void Poller::AwakePoller()
+{
+    char a='1';
+    assert(write(awakefd[1],(void*)&a,sizeof(a))>0);
 }
 void Poller::updateChannel(Channel *_channel)
 {
