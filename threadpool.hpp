@@ -19,7 +19,6 @@ public:
         task() {}
     } threadtask;
     bool init();
-    void destroy();
     void quit();
     void addtask(const ThreadPool::threadtask& _task);
     void startpool();

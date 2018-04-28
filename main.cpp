@@ -1,11 +1,11 @@
 #include "threadpool.hpp"
 #include <functional>
+#include<QDebug>
 using namespace std;
-
 #include <pthread.h>
 void* testthreadpool(void* v)
 {
-    std::cout<<(long)v<<" "<<(int)pthread_self();
+    std::cout<<(long)v<<std::endl;
     return (void*)0;
 }
 int main()
@@ -19,5 +19,9 @@ int main()
         temp.func=func;
         pool.addtask(temp);
     }
+    pool.startpool();
+    sleep(3);
+    pool.quit();
+    sleep(3);
     return 0;
 }

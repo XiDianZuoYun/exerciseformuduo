@@ -7,7 +7,7 @@
 QT       -= gui
 CONFIG +=c++14
 TARGET = test
-TEMPLATE = lib
+TEMPLATE = app
 
 DEFINES += TEST_LIBRARY
 
@@ -30,9 +30,9 @@ SOURCES += \
     CONDITION.cpp \
     MUTEXLOCK.cpp \
     threadpool.cpp \
-    oopsocket.cpp \
     main.cpp \
-    buffer.cpp
+    buffer.cpp \
+    Tcpsocket.cpp
 
 HEADERS += \
     POLLER.hpp \
@@ -41,9 +41,9 @@ HEADERS += \
     threadpool.hpp \
     THREAD.h \
     MUTEXLOCK.hpp \
-    oopsocket.h \
     CONDITION.hpp \
-    buffer.hpp
+    buffer.hpp \
+    Tcpsocket.h
 
 unix {
     target.path = /usr/lib

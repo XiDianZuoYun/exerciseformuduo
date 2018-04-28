@@ -2,7 +2,6 @@
 #include <functional>
 void ThreadPool::thread_process()
 {
-    assert(!isrunning_);
     while(!quit_&&isrunning_)
     {
       threadtask task=take();
@@ -12,7 +11,6 @@ void ThreadPool::thread_process()
     if(quit_)
         return;
 }
-
 void ThreadPool::_init()
 {
     std::function<void()> _func=std::bind(&ThreadPool::thread_process,this);
@@ -29,7 +27,7 @@ void ThreadPool::addtask(const ThreadPool::threadtask& _task)
 }
 ThreadPool::threadtask ThreadPool::take()
 {
-    MutexLockGuard __lock(mutex_);
+    mutex_.lock();
     while(taskpool.empty()&&isrunning_)
     {
         cont_.wait();
@@ -40,6 +38,7 @@ ThreadPool::threadtask ThreadPool::take()
         task=taskpool.front();
         taskpool.pop();
     }
+    mutex_.unlock();
     return task;
 }
 void ThreadPool::startpool()
@@ -59,6 +58,6 @@ void ThreadPool::quit()
     if(isrunning_)
         isrunning_=false;
     quit_=true;
-    cont_.notifyAll();
     mutex_.unlock();
+    cont_.notifyAll();
 }

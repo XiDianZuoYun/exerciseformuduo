@@ -1,19 +1,31 @@
-#include "oopsocket.h"
+#include "Tcpsocket.h"
 #include <unistd.h>
 #include<arpa/inet.h>
 #include<fcntl.h>
-OopSOCKET::OopSOCKET()
+TcpSOCKET::TcpSOCKET()
 {
     int fd=socket(AF_INET,SOCK_STREAM,0);
     assert(fd>0);
     fcntl(fd,F_SETFL,O_NONBLOCK);
     sockid_=fd;
 }
-OopSOCKET::~OopSOCKET()
+TcpSOCKET::TcpSOCKET(TcpSOCKET &&o):sockid_(o.getfd())
+{
+    o.restore();
+    o.~TcpSOCKET();
+}
+TcpSOCKET& TcpSOCKET::operator =(TcpSOCKET &&o)
+{
+    this->sockid_=o.getfd();
+    o.restore();
+    o.~TcpSOCKET();
+    return *this;
+}
+TcpSOCKET::~TcpSOCKET()
 {
     close(sockid_);
 }
-bool OopSOCKET::bindIP(const std::string& port)
+bool TcpSOCKET::bindport(const std::string& port)
 {
     assert(port.size()<=5);
     struct sockaddr_in addr;
@@ -23,17 +35,17 @@ bool OopSOCKET::bindIP(const std::string& port)
     bool result=bind(sockid_,(sockaddr*)&addr,sizeof(addr))==0;
     return result;
 }
-bool OopSOCKET::setsndbufsize(long bufsize)
+bool TcpSOCKET::setsndbufsize(long bufsize)
 {
     bool result=setsockopt(sockid_,SOL_SOCKET,SO_SNDBUF,(void*)bufsize,sizeof(bufsize));
     return result;
 }
-bool OopSOCKET::setrecbufsize(long bufsize)
+bool TcpSOCKET::setrecbufsize(long bufsize)
 {
     bool result=setsockopt(sockid_,SOL_SOCKET,SO_RCVBUF,(void*)bufsize,sizeof(bufsize));
     return result;
 }
-bool OopSOCKET::Connect(const std::string &ipaddr, const std::string &port)
+bool TcpSOCKET::Connect(const std::string &ipaddr, const std::string &port)
 {
     sockaddr_in addr;
     addr.sin_addr.s_addr=inet_addr(ipaddr.c_str());
@@ -42,27 +54,23 @@ bool OopSOCKET::Connect(const std::string &ipaddr, const std::string &port)
     bool result=connect(sockid_,(sockaddr*)&addr,sizeof(addr))==0;
     return result;
 }
-bool OopSOCKET::listenconnect()
+bool TcpSOCKET::listenconnect()
 {
     bool result=listen(sockid_,100)==0;
     return result;
 }
-bool OopSOCKET::shutdownsock(int flag)
+bool TcpSOCKET::shutdownsock(int flag)
 {
     bool result=shutdown(sockid_,flag);
     return result;
 }
-void* OopSOCKET::recvtobuffer(void* buf)
+void* TcpSOCKET::recvtobuffer(void* buf,int length)
 {
-    bytebuf temp;
-    int n=recv(sockid_,(void*)temp.buf,temp.length,0);
-    if(n>0)
-        temp.length=n;
+    int n=recv(sockid_,buf,length,0);
     return (void*)n;
 }
-void* OopSOCKET::sendfrombuffer(void* buf)
+void* TcpSOCKET::sendfrombuffer(void* buf,int length)
 {
-    bytebuf temp;
-    int n=send(sockid_,(void*)temp.buf,temp.length,0);
+    int n=send(sockid_,(void*)buf,length,0);
     return (void*)n;
 }

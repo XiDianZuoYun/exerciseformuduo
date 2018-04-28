@@ -4,30 +4,25 @@
 #include <assert.h>
 #include<arpa/inet.h>
 #include <string>
-class OopSOCKET
+#include <buffer.hpp>
+class TcpSOCKET
 {
 public:
-    typedef struct bytebuf
-    {
-    public:
-        char buf[];
-        int length;
-        bytebuf() {}
-    } bytebuf;
-    OopSOCKET(const OopSOCKET& o)=delete;
-    OopSOCKET operator=(OopSOCKET& _o)=delete;
-    OopSOCKET(int skfd_):sockid_(skfd_){}
-    OopSOCKET();
-    ~OopSOCKET();
-    bool bindIP(const std::string& port);
+
+    TcpSOCKET(TcpSOCKET&& o);
+    TcpSOCKET& operator=(TcpSOCKET&& _o);
+    TcpSOCKET();
+    ~TcpSOCKET();
+    bool bindport(const std::string& port);
     bool setsndbufsize(long bufsize);
     bool setrecbufsize(long bufsize);
     bool listenconnect();
     bool Connect(const std::string& ipaddr,const std::string& port);
     bool shutdownsock(int flag);
-    void* recvtobuffer(void* buf);
-    void* sendfrombuffer(void* buf);
+    void* recvtobuffer(void* buf,int length);
+    void* sendfrombuffer(void* buf,int length);
     int getfd(){return sockid_;}
+    void restore(){sockid_=-1;}
 private:
     int sockid_;
 };
