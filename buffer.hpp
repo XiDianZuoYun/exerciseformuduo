@@ -1,7 +1,7 @@
 #ifndef BUFFER_HPP
 #define BUFFER_HPP
-#include <MUTEXLOCK.hpp>
 #include <functional>
+#include <MUTEXLOCK.hpp>
 class Buffer
 {
 public:

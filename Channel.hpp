@@ -2,8 +2,8 @@
 #define CHANNEL
 #include <functional>
 #include <iostream>
-#include "POLLER.hpp"
 #include <vector>
+#include "POLLER.hpp"
 class Channel{
 public:
   typedef std::function<void()> functor;

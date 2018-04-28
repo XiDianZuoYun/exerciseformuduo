@@ -1,5 +1,4 @@
 #include "threadpool.hpp"
-#include <functional>
 void ThreadPool::thread_process()
 {
     while(!quit_&&isrunning_)

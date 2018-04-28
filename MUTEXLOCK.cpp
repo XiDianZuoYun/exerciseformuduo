@@ -1,5 +1,5 @@
-#include "MUTEXLOCK.hpp"
 #include <assert.h>
+#include "MUTEXLOCK.hpp"
 MutexLock::MutexLock():islocking_(false)
 {
     assert(!pthread_mutex_init(&mutex_,NULL));

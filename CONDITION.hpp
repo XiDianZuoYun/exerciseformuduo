@@ -1,9 +1,9 @@
 #ifndef _CONDITION_H_
 #define _CONDITION_H_
-#include "MUTEXLOCK.hpp"
 #include <pthread.h>
 #include <boost/noncopyable.hpp>
 #include <assert.h>
+#include "MUTEXLOCK.hpp"
 class MutexLock;
 class condition
 {

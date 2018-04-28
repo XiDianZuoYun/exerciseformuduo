@@ -1,6 +1,6 @@
-#include "CONDITION.hpp"
 #include <pthread.h>
 #include <assert.h>
+#include "CONDITION.hpp"
 condition::condition(MutexLock& mutex_):MUTEX_(mutex_)
 {
   assert(!pthread_cond_init(&cond_,NULL));

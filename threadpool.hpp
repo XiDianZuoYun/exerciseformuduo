@@ -1,13 +1,13 @@
 #ifndef THREADPOOL_HPP
 #define THREADPOOL_HPP
 #include <functional>
+#include <queue>
+#include <vector>
 #include "MUTEXLOCK.hpp"
 #include "CONDITION.hpp"
 #include "THREAD.h"
 #include "CONDITION.hpp"
 #include "MUTEXLOCK.hpp"
-#include <queue>
-#include <vector>
 #define maxthreadsize 16
 class ThreadPool{
 public:

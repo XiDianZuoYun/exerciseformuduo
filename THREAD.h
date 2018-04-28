@@ -2,11 +2,11 @@
 #define _THREAD_H
 #include <pthread.h>
 #include <boost/noncopyable.hpp>
-#include "MUTEXLOCK.hpp"
-#include "CONDITION.hpp"
 #include <iostream>
 #include <functional>
 #include <assert.h>
+#include "MUTEXLOCK.hpp"
+#include "CONDITION.hpp"
 class Thread
 {
 typedef std::function<void ()> threadFunc;
