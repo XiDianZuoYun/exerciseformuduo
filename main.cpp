@@ -2,6 +2,7 @@
 #include <functional>
 #include<QDebug>
 #include "CONDITION.hpp"
+#include "threadpool.hpp"
 using namespace std;
 void* testthreadpool(void* v)
 {
@@ -22,6 +23,5 @@ int main()
     pool.startpool();
     sleep(3);
     pool.quit();
-    sleep(3);
     return 0;
 }

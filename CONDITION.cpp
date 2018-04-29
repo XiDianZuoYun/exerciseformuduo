@@ -12,7 +12,7 @@ condition::~condition()
 void condition::wait()
 {
   assert(MUTEX_.islocking());
-  MUTEX_.lock();
+//  MUTEX_.lock();
   MUTEX_.clearflag();
   pthread_cond_wait(&cond_,MUTEX_.getMutexptr());
   MUTEX_.restoreMutex();

@@ -3,6 +3,8 @@
 #include <map>
 #include <vector>
 #include "POLLER.hpp"
+/*Before we use the poller,it's neccessary to make sure that we have power to let it return.
+Variable handlenmus is the number of channels registered in this poller.*/
 Poller::Poller(int maxsize)
 {
   epfd_=epoll_create1(maxsize);
@@ -14,6 +16,8 @@ Poller::Poller(int maxsize)
   assert(!epoll_ctl(epfd_,EPOLL_CTL_ADD,awakefd[0],&temp));
   handlenums=0;
 }
+/*We assume that the epoll file description will be managed by the only poller.if the poller is closed,
+the file description will be alse closed.*/
 Poller::~Poller()
 {
   close(epfd_);
@@ -22,12 +26,16 @@ Poller::~Poller()
   {
       (*it).second->~Channel();
   }
+  events.clear();
 }
+/*Write in pipe,this wil make wait function return*/
 void Poller::AwakePoller()
 {
     char a='1';
     assert(write(awakefd[1],(void*)&a,sizeof(a))>0);
 }
+/*According to user's command,update Channel list.
+If the new channel can be found in map,its register event will be updated.*/
 void Poller::updateChannel(Channel *_channel)
 {
     typedef std::map<int,Channel*>::iterator iterator;
@@ -50,6 +58,8 @@ void Poller::updateChannel(Channel *_channel)
         assert(!epoll_ctl(epfd_,EPOLL_CTL_MOD,_channel->getfd(),&temp));
     }
 }
+/*blocked on epoll_wait,unless waked by wakefd or events happened.
+Then poller will push all of the active channels into the IO thread's loop.*/
 void Poller::waitforevents(std::vector<Channel*> &activeChannels_)
 {
   int len=events.size();
@@ -62,12 +72,16 @@ void Poller::waitforevents(std::vector<Channel*> &activeChannels_)
   {
     int index=revents_[i].data.fd;
     int revent_=revents_[i].events;
-    events[index]->setevents(revent_);
-    MutexLockGuard __lock(lock_);
-    Channel* temp=events[index];
-    activeChannels_.push_back(std::move(temp));
+    if(index!=awakefd[0])
+    {
+        events[index]->setevents(revent_);
+        MutexLockGuard __lock(lock_);
+        Channel* temp=events[index];
+        activeChannels_.push_back(std::move(temp));
+    }
   }
 }
+/*Remove the channel that has been registered in this poller.*/
 void Poller::removeChannel(Channel* _channel)
 {
   typedef std::map<int,Channel*>::iterator iterator;
