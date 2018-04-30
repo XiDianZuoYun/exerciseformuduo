@@ -29,10 +29,15 @@ Poller::~Poller()
   events.clear();
 }
 /*Write in pipe,this wil make wait function return*/
-void Poller::AwakePoller()
+void Poller::AwakePoller(command* cmd)
 {
-    char a='1';
-    assert(write(awakefd[1],(void*)&a,sizeof(a))>0);
+    if(cmd==nullptr)
+    {
+        char a='1';
+        assert(write(awakefd[1],(void*)&a,sizeof(a))>0);
+    }else{
+        assert(write(awakefd[1],(void*)cmd,sizeof(command))>0);
+    }
 }
 /*According to user's command,update Channel list.
 If the new channel can be found in map,its register event will be updated.*/
@@ -62,7 +67,6 @@ void Poller::updateChannel(Channel *_channel)
 Then poller will push all of the active channels into the IO thread's loop.*/
 void Poller::waitforevents(std::vector<Channel*> &activeChannels_)
 {
-  int len=events.size();
   typedef std::map<int,Channel*>::iterator iterator;
   for (iterator it=events.begin();it!=events.end();++it) {
     (*it).second->usinghandling_();
@@ -78,6 +82,24 @@ void Poller::waitforevents(std::vector<Channel*> &activeChannels_)
         MutexLockGuard __lock(lock_);
         Channel* temp=events[index];
         activeChannels_.push_back(std::move(temp));
+    }else
+    {
+        command *cmd=(command*)malloc(sizeof(command));
+        int n=read(awakefd[0],(void*)cmd,sizeof(command));
+        if(n==1)
+            return;
+        else
+            switch (cmd->commandflag) {
+            case wakeup:
+                break;
+            case sendsocket:
+                updateChannel((Channel*)cmd->data);
+                break;
+            case breakdown:
+                return;
+                break;
+            }
+        delete(cmd);
     }
   }
 }

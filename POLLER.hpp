@@ -14,12 +14,23 @@
 class Channel;
 class Poller{
 public:
+    enum command_list{
+        wakeup=0,
+        sendsocket=1,
+        breakdown=2
+    };
+    typedef struct command
+    {
+        command_list commandflag;
+        void* data;
+        command() {}
+    } command;
   Poller(int maxsize);
   ~Poller();
   void updateChannel(Channel* _channel);
   void waitforevents(std::vector<Channel*>& activeChannels_);
   void removeChannel(Channel* _channel);
-  void AwakePoller();
+  void AwakePoller(command* cmd);
 private:
   std::map<int,Channel*> events;
   std::vector<epoll_event> revents_;

@@ -14,6 +14,7 @@ public:
     TcpSOCKET();
     ~TcpSOCKET();
     bool bindport(const std::string& port);
+    bool reuseSocket();
     bool setsndbufsize(long bufsize);
     bool setrecbufsize(long bufsize);
     bool listenconnect();

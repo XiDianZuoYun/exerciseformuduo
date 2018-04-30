@@ -54,9 +54,9 @@ void ThreadPool::startpool()
 void ThreadPool::quit()
 {
     mutex_.lock();
+    quit_=true;
     if(isrunning_)
         isrunning_=false;
-    quit_=true;
     mutex_.unlock();
     cont_.notifyAll();
 }

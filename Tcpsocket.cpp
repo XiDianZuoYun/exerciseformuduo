@@ -25,6 +25,16 @@ TcpSOCKET::~TcpSOCKET()
 {
     close(sockid_);
 }
+bool TcpSOCKET::reuseSocket()
+{
+    bool result;
+    int flag=1;
+    result=setsockopt(sockid_,SOL_SOCKET,SO_REUSEADDR,&flag,sizeof(flag))>0;
+    if(!result)
+        return result;
+    result=setsockopt(sockid_,SOL_SOCKET,SO_REUSEPORT,&flag,sizeof(flag))>0;
+    return result;
+}
 bool TcpSOCKET::bindport(const std::string& port)
 {
     assert(port.size()<=5);
