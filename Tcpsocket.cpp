@@ -38,11 +38,10 @@ bool TcpSOCKET::reuseSocket()
 bool TcpSOCKET::bindport(const std::string& port)
 {
     assert(port.size()<=5);
-    struct sockaddr_in addr;
-    addr.sin_family=AF_INET;
-    addr.sin_addr.s_addr=htonl(INADDR_ANY);
-    addr.sin_port=htonl(atoi(port.c_str()));
-    bool result=bind(sockid_,(sockaddr*)&addr,sizeof(addr))==0;
+    myaddr.sin_family=AF_INET;
+    myaddr.sin_addr.s_addr=htonl(INADDR_ANY);
+    myaddr.sin_port=htonl(atoi(port.c_str()));
+    bool result=bind(sockid_,(sockaddr*)&myaddr,sizeof(myaddr))==0;
     return result;
 }
 bool TcpSOCKET::setsndbufsize(long bufsize)

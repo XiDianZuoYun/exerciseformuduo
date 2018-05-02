@@ -17,7 +17,9 @@ public:
     Buffer(Buffer &&_buf);
     unsigned char* getBufferPtr(){return buf;}
     int Writeinbuf(unsigned char* content,int &length);
+    void WriteFd(int fd,int&length);
     int Readfrombuf(unsigned char* rebuf,int &length);
+    void ReadFd(int fd,int& length);
     int getusedsize(){return used;}
     int getMaxSize(){return maxvol;}
     void SetEmptyCallback(std::function<void*(void*)> &cb,void* arg);

@@ -32,4 +32,19 @@ bool Channel::ishandling_()
 {
   return handling_;
 }
+void Channel::readExample()
+{
+    int length=buf->getMaxSize();
+    buf->ReadFd(fd_,length);
+}
+void Channel::writeExample()
+{
+    int length=buf->getusedsize();
+    int templen=length;
+    buf->WriteFd(fd_,length);
+    if(length<templen)
+        regevents|=EPOLLOUT;
+    loop->updateChannel(this);
+}
+
 

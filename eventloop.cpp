@@ -22,6 +22,10 @@ bool EventLoop::isInloopThread()
 {
     return pt==::pthread_self();
 }
+void EventLoop::updateChannel(Channel *_chan)
+{
+    poller->updateChannel(_chan);
+}
 void EventLoop::loop()
 {
     typedef std::vector<Channel*>::iterator iterator;

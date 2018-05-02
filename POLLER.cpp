@@ -29,15 +29,11 @@ Poller::~Poller()
   events.clear();
 }
 /*Write in pipe,this wil make wait function return*/
-void Poller::AwakePoller(command* cmd)
+void Poller::AwakePoller()
 {
-    if(cmd==nullptr)
-    {
-        char a='1';
-        assert(write(awakefd[1],(void*)&a,sizeof(a))>0);
-    }else{
-        assert(write(awakefd[1],(void*)cmd,sizeof(command))>0);
-    }
+   char a='1';
+   assert(write(awakefd[1],(void*)&a,sizeof(a))>0);
+
 }
 /*According to user's command,update Channel list.
 If the new channel can be found in map,its register event will be updated.*/
@@ -82,28 +78,19 @@ void Poller::waitforevents(std::vector<Channel*> &activeChannels_)
         MutexLockGuard __lock(lock_);
         Channel* temp=events[index];
         activeChannels_.push_back(std::move(temp));
-    }else
+    }
+    pendingwork();
+    epoll_event temp;
+    for(iterator it=events.begin();it!=events.end();++it)
     {
-        command *cmd=(command*)malloc(sizeof(command));
-        int n=read(awakefd[0],(void*)cmd,sizeof(command));
-        if(n==1)
-            return;
-        else
-            switch (cmd->commandflag) {
-            case wakeup:
-                break;
-            case sendsocket:
-                updateChannel((Channel*)cmd->data);
-                break;
-            case breakdown:
-                return;
-                break;
-            }
-        delete(cmd);
+        Channel* ch=(*it).second;
+        temp.data.fd=ch->getfd();
+        temp.events=ch->returnreg();
+        assert(!epoll_ctl(epfd_,EPOLL_CTL_MOD,ch->getfd(),&temp));
     }
   }
 }
-/*Remove the channel that has been registered in this poller.*/
+/*remove that has been registered in this poller.*/
 void Poller::removeChannel(Channel* _channel)
 {
   typedef std::map<int,Channel*>::iterator iterator;

@@ -30,6 +30,44 @@ int Buffer::Readfrombuf(unsigned char *rebuf, int &length)
     }
     return length<used?length:used;
 }
+void Buffer::WriteFd(int fd, int &length)
+{
+    MutexLockGuard __lock(mutex_);
+    if(length<used)
+    {
+        int n=write(fd,(void*)buf,length);
+        length=n;
+        buf-=n;
+        used-=n;
+    }
+    else{
+        int n=write(fd,(void*)buf,used);
+        length=n;
+        buf-=n;
+        used-=n;
+        if(used==0)
+            emptyCallback.func(emptyCallback.arg);
+    }
+}
+void Buffer::ReadFd(int fd, int &length)
+{
+    if(maxvol-used>length)
+    {
+        int n=read(fd,(void*)buf,length);
+        length=n;
+        buf+=n;
+        used+=n;
+    }else{
+       reusedbuf=(unsigned char*)malloc(maxvol>length?2*maxvol:2*length);
+       memcpy(reusedbuf,buf,used);
+       buf=reusedbuf+used;
+       reusedbuf=nullptr;
+       int n=read(fd,(void*)buf,length);
+       length=n;
+       used+=n;
+       buf+=n;
+    }
+}
 int Buffer::Writeinbuf(unsigned char *content, int &length)
 {
     MutexLockGuard __lock(mutex_);
