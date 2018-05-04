@@ -1,5 +1,5 @@
+#include<iostream>
 #include "Channel.hpp"
-
 void Channel::handleEvent()
 {
   if (events_&EVENTIN) {
@@ -34,6 +34,7 @@ bool Channel::ishandling_()
 }
 void Channel::readExample()
 {
+    std::cout<<"fuck recv"<<std::endl;
     int length=buf->getMaxSize();
     buf->ReadFd(fd_,length);
 }

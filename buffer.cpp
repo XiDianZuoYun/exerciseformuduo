@@ -51,7 +51,7 @@ void Buffer::WriteFd(int fd, int &length)
 }
 void Buffer::ReadFd(int fd, int &length)
 {
-    if(maxvol-used>length)
+    if(maxvol-used>=length)
     {
         int n=read(fd,(void*)buf,length);
         length=n;

@@ -10,7 +10,7 @@ class Channel;
 class Poller;
 class EventLoop{
 public:
-    EventLoop(Poller* _poller);
+    EventLoop();
     bool isInloopThread();
     void updateChannel(Channel* _chan);
     ~EventLoop();
@@ -21,6 +21,6 @@ private:
     bool quit__;
     std::vector<Channel*>* activeChannels_;
     Poller *poller;
-    pid_t pt;
+    pthread_t pt;
 };
 #endif // EVENTLOOP_HPP

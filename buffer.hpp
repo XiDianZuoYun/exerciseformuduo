@@ -1,7 +1,7 @@
 #ifndef BUFFER_HPP
 #define BUFFER_HPP
 #include <functional>
-#include <MUTEXLOCK.hpp>
+#include "MUTEXLOCK.hpp"
 class Buffer
 {
 public:
@@ -12,7 +12,7 @@ public:
         void* arg;
         CallBack() {}
     } CallBack;
-    Buffer(int volumn):maxvol(volumn) {buf=(unsigned char*)malloc(maxvol);}
+    Buffer(int volumn):maxvol(volumn),buf((unsigned char*)malloc(maxvol)){}
     Buffer(Buffer& _buf)=delete;
     Buffer(Buffer &&_buf);
     unsigned char* getBufferPtr(){return buf;}

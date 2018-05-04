@@ -6,6 +6,7 @@
 #include <map>
 #include <assert.h>
 #include <vector>
+#include <errno.h>
 #include "MUTEXLOCK.hpp"
 #include <functional>
 #include "Channel.hpp"

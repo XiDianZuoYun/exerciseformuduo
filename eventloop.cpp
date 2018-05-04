@@ -2,7 +2,8 @@
 #include "eventloop.hpp"
 class EventLoop;
 __thread EventLoop* loopinthisThread=0;
-EventLoop::EventLoop(Poller* _poller):poller(_poller),looping_(false),quit__(false)
+EventLoop::EventLoop():looping_(false),quit__(false),poller(new Poller(1024)),
+  activeChannels_(new std::vector<Channel*>())
 {
     assert(!loopinthisThread);
     loopinthisThread=this;
@@ -44,4 +45,5 @@ void EventLoop::quit()
     assert(isInloopThread());
     looping_=false;
     quit__=true;
+    poller->AwakePoller();
 }

@@ -7,14 +7,15 @@
 Variable handlenmus is the number of channels registered in this poller.*/
 Poller::Poller(int maxsize)
 {
-  epfd_=epoll_create1(maxsize);
+  assert((epfd_=epoll_create(maxsize))>0);
   assert(!pipe(awakefd));
   epoll_event temp;
   temp.data.fd=awakefd[0];
   temp.events|=EPOLLIN;
   temp.events|=EPOLLET;
-  assert(!epoll_ctl(epfd_,EPOLL_CTL_ADD,awakefd[0],&temp));
-  handlenums=0;
+  if(epoll_ctl(epfd_,EPOLL_CTL_ADD,awakefd[0],&temp)<0)
+      std::cout<<errno<<std::endl;
+  handlenums=1;
 }
 /*We assume that the epoll file description will be managed by the only poller.if the poller is closed,
 the file description will be alse closed.*/
@@ -48,7 +49,7 @@ void Poller::updateChannel(Channel *_channel)
         temp.data.fd=_channel->getfd();
         temp.events=_channel->returnreg();
         temp.events|=EPOLLET;
-        assert(!epoll_ctl(epfd_,EPOLL_CTL_ADD,_channel->getfd(),&temp));
+        assert(!epoll_ctl(epfd_,EPOLL_CTL_MOD,_channel->getfd(),&temp));
     }
     else{
         events[_channel->getfd()]=_channel;
@@ -56,7 +57,10 @@ void Poller::updateChannel(Channel *_channel)
         temp.data.fd=_channel->getfd();
         temp.events=_channel->returnreg();
         temp.events|=EPOLLET;
-        assert(!epoll_ctl(epfd_,EPOLL_CTL_MOD,_channel->getfd(),&temp));
+        handlenums+=1;
+        if(revents_.size()<=handlenums)
+            revents_.resize(2*handlenums);
+        assert(!epoll_ctl(epfd_,EPOLL_CTL_ADD,_channel->getfd(),&temp));
     }
 }
 /*blocked on epoll_wait,unless waked by wakefd or events happened.
@@ -67,9 +71,13 @@ void Poller::waitforevents(std::vector<Channel*> &activeChannels_)
   for (iterator it=events.begin();it!=events.end();++it) {
     (*it).second->usinghandling_();
   }
-  int n=epoll_wait(epfd_,&*revents_.begin(),handlenums,-1);
+  std::cout<<"wait"<<std::endl;
+  int n=epoll_wait(epfd_,&(*revents_.begin()),handlenums,-1);
+  std::cout<<errno<<std::endl;
+  std::cout<<n<<std::endl;
   for(int i=0;i<n;++i)
   {
+    std::cout<<"fill"<< n<<std::endl;
     int index=revents_[i].data.fd;
     int revent_=revents_[i].events;
     if(index!=awakefd[0])
@@ -79,7 +87,8 @@ void Poller::waitforevents(std::vector<Channel*> &activeChannels_)
         Channel* temp=events[index];
         activeChannels_.push_back(std::move(temp));
     }
-    pendingwork();
+    if(pendingwork)
+        pendingwork();
     epoll_event temp;
     for(iterator it=events.begin();it!=events.end();++it)
     {
