@@ -36,7 +36,8 @@ void Channel::readExample()
 {
     std::cout<<"fuck recv"<<std::endl;
     int length=buf->getMaxSize();
-    buf->ReadFd(fd_,length);
+    int len=length/2;
+    buf->ReadFd(fd_,len);
 }
 void Channel::writeExample()
 {

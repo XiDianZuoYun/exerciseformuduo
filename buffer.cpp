@@ -45,7 +45,7 @@ void Buffer::WriteFd(int fd, int &length)
         length=n;
         buf-=n;
         used-=n;
-        if(used==0)
+        if(used==0&&emptyCallback)
             emptyCallback.func(emptyCallback.arg);
     }
 }
@@ -58,7 +58,9 @@ void Buffer::ReadFd(int fd, int &length)
         buf+=n;
         used+=n;
     }else{
-       reusedbuf=(unsigned char*)malloc(maxvol>length?2*maxvol:2*length);
+        int newlen=maxvol>length?2*maxvol:2*length;
+        std::cout<<newlen;
+       reusedbuf=new unsigned char[newlen];
        memcpy(reusedbuf,buf,used);
        buf=reusedbuf+used;
        reusedbuf=nullptr;
@@ -86,7 +88,8 @@ int Buffer::Writeinbuf(unsigned char *content, int &length)
         used+=length;
         buf=reusedbuf+length;
         reusedbuf=nullptr;
-        fullCallback.func(fullCallback.arg);
+        if(fullCallback)
+            fullCallback.func(fullCallback.arg);
     }
     return length<=maxvol-used?length:maxvol-used;
 }
