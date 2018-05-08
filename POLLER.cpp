@@ -73,7 +73,8 @@ void Poller::waitforevents(std::vector<Channel*> &activeChannels_)
   }
   std::cout<<"wait"<<std::endl;
   int n=epoll_wait(epfd_,&(*revents_.begin()),handlenums,-1);
-  std::cout<<errno<<std::endl;
+  if(errno!=0)
+    std::cerr<<"error:"<<errno<<std::endl;
   std::cout<<n<<std::endl;
   for(int i=0;i<n;++i)
   {

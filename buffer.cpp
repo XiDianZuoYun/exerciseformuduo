@@ -1,6 +1,6 @@
 #include "buffer.hpp"
 #include <cstring>
-Buffer::Buffer(Buffer &&_buf):buf(_buf.reset()),maxvol(_buf.getMaxSize()),used(_buf.getusedsize())
+Buffer::Buffer(Buffer &&_buf):buf(std::move(_buf.getbuf())),maxvol(_buf.getMaxSize()),used(_buf.getusedsize())
 {
     _buf.~Buffer();
 }
@@ -14,38 +14,34 @@ void Buffer::SetFullCallback(std::function<void *(void *)> &cb, void *arg)
     emptyCallback.func=functor(cb);
     emptyCallback.arg=arg;
 }
-int Buffer::Readfrombuf(unsigned char *rebuf, int &length)
+int Buffer::Readfrombuf(char *rebuf, int &length)
 {
-    MutexLockGuard __lock(mutex_);
     if(length<=used)
     {
-        memcpy((void*)rebuf,(void*)buf,length);
+        std::copy(buf.begin()+used-length,buf.begin()+used,rebuf);
         used-=length;
-        buf-=length;
     }else{
-        memcpy((void*)rebuf,(void*)buf,used);
+        std::copy(buf.begin(),buf.begin()+used,rebuf);
         used=0;
-        buf-=used;
         emptyCallback.func(emptyCallback.arg);
     }
     return length<used?length:used;
 }
 void Buffer::WriteFd(int fd, int &length)
 {
-    MutexLockGuard __lock(mutex_);
     if(length<used)
     {
-        int n=write(fd,(void*)buf,length);
+        auto it=buf.begin()+used-length;
+        int n=write(fd,(void*)(&(*it)),length);
         length=n;
-        buf-=n;
         used-=n;
     }
     else{
-        int n=write(fd,(void*)buf,used);
+        auto it=buf.begin();
+        int n=write(fd,(void*)(&(*it)),used);
         length=n;
-        buf-=n;
         used-=n;
-        if(used==0&&emptyCallback)
+        if(used==0)
             emptyCallback.func(emptyCallback.arg);
     }
 }
@@ -53,51 +49,35 @@ void Buffer::ReadFd(int fd, int &length)
 {
     if(maxvol-used>=length)
     {
-        int n=read(fd,(void*)buf,length);
+        auto it=buf.begin()+used;
+        int n=read(fd,(void*)(&(*it)),length);
         length=n;
-        buf+=n;
         used+=n;
     }else{
         int newlen=maxvol>length?2*maxvol:2*length;
         std::cout<<newlen;
-       reusedbuf=new unsigned char[newlen];
-       memcpy(reusedbuf,buf,used);
-       buf=reusedbuf+used;
-       reusedbuf=nullptr;
-       int n=read(fd,(void*)buf,length);
+       buf.reserve(newlen);
+       maxvol=newlen;
+       auto it=buf.begin()+used;
+       int n=read(fd,(void*)(&(*it)),length);
        length=n;
        used+=n;
-       buf+=n;
     }
 }
-int Buffer::Writeinbuf(unsigned char *content, int &length)
+int Buffer::Writeinbuf(char *content, int &length)
 {
-    MutexLockGuard __lock(mutex_);
     if(length<=maxvol-used)
     {
-        memcpy((void*)buf,(void*)content,length);
+        std::copy(content,content+length,buf.begin()+used);
         used+=length;
-        buf+=length;
     }else{
         int _maxvol=maxvol>length?2*maxvol:2*length;
-        reusedbuf=(unsigned char*)malloc(_maxvol);
+        buf.reserve(_maxvol);
         maxvol=_maxvol;
-        memcpy((void*)reusedbuf,(void*)buf,used);
-        reusedbuf+=used;
-        memcpy((void*)reusedbuf,(void*)content,length);
+        auto it=buf.begin()+used;
+        std::copy(content,content+length,it);
         used+=length;
-        buf=reusedbuf+length;
-        reusedbuf=nullptr;
-        if(fullCallback)
-            fullCallback.func(fullCallback.arg);
+        fullCallback.func(fullCallback.arg);
     }
     return length<=maxvol-used?length:maxvol-used;
-}
-unsigned char* Buffer::reset()
-{
-    MutexLockGuard __lock(mutex_);
-    unsigned char* temp=buf;
-    buf=nullptr;
-    used=0;
-    return temp;
 }
