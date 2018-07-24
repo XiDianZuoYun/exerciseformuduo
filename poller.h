@@ -7,7 +7,9 @@
 #include <memory>
 #include <vector>
 #include <assert.h>
+#include <string.h>
 #include "channel.h"
+#define POLLER_DEBUG
 class Poller
 {
 private:
@@ -25,6 +27,13 @@ public:
     void poll(/*timeclock* sec,*/std::vector<ChannelPtr>& active);
     void remove_channel(ChannelPtr _channel);
     void update_channel(ChannelPtr _channel);
+#ifdef POLLER_DEBUG
+    void AddFD(int fd);
+    void removeFD(int fd);
+    void Poll_debug();
+#endif
+    void remove_channel(Channel* _channel);
+    void update_channel(Channel* _channel);
     void Wakeup();
 };
 
