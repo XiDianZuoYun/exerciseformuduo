@@ -1,6 +1,8 @@
 #include "poller.h"
 #define POLLER_DEBUG
-Poller::Poller():epoll_fd(epoll_create(1024)),reg_nums(0),isPolling_(false)
+#include <fcntl.h>
+Poller::Poller(int maxevents, EventLoop *__loop):epoll_fd(epoll_create(maxevents)),
+    isPolling_(false),reg_nums(0),loop(__loop)
 {
     //Use socketpair to be the file description that can wake poller up.
     //If we want to wake poller up,we just need to write one byte into socketpair.
@@ -19,17 +21,7 @@ Poller::~Poller()
     close(wake_fd[0]);
     close(wake_fd[1]);
 }
-void Poller::remove_channel(ChannelPtr _channel)
-{
-    int fd=_channel->getfd();
-    auto iter=reg_Channel.find(fd);
-    if(iter==reg_Channel.end())
-        std::cout<<"No channel in this map!";
-    reg_Channel.erase(iter);
-    assert(epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd,nullptr)==0);
-    reg_nums--;
-}
-void Poller::update_channel(ChannelPtr _channel)
+void Poller::update_channel(Channel *_channel)
 {
     int fd=_channel->getfd();
     auto iter=reg_Channel.find(fd);
@@ -39,7 +31,7 @@ void Poller::update_channel(ChannelPtr _channel)
         bzero(&temp,sizeof(epoll_event));
         temp.events|=EPOLLET;
         temp.events|=_channel->getevents();
-        temp.data.ptr=(void*)_channel.get();
+        temp.data.ptr=(void*)_channel;
         reg_Channel[fd]=_channel;
         assert(epoll_ctl(epoll_fd,EPOLL_CTL_ADD,fd,&temp)==0);
         reg_nums++;
@@ -54,42 +46,26 @@ void Poller::update_channel(ChannelPtr _channel)
         bzero(&temp,sizeof(epoll_event));
         temp.events|=EPOLLET;
         temp.events|=_channel->getevents();
-        temp.data.ptr=(void*)_channel.get();
+        temp.data.ptr=static_cast<void*>(_channel);
         assert(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,fd,&temp)==0);
     }
 }
-void Poller::update_channel(Channel *_channel)
-{
-    ChannelPtr temp(_channel);
-    update_channel(temp);
-}
-#ifdef POLLER_DEBUG
-void Poller::AddFD(int fd)
-{
-    epoll_event temp;
-    bzero(&temp,sizeof(epoll_event));
-    temp.data.fd=fd;
-    temp.events|=(EPOLLIN|EPOLLET);
-    assert(epoll_ctl(epoll_fd,EPOLL_CTL_ADD,fd,&temp)==0);
-}
-void Poller::Poll_debug()
-{
-    epoll_event epoll_array[20];
-    int n=epoll_wait(epoll_fd,epoll_array,20,-1);
-    for(int i=0;i<n;++i)
-        std::cout<<epoll_array[i].data.fd<<' '<<epoll_array[i].events<<std::endl;
-}
-#endif
 void Poller::remove_channel(Channel *_channel)
 {
     ChannelPtr temp(_channel);
-    remove_channel(temp);
+    if(reg_nums==0) return;
+    int fd=_channel->getfd();
+    auto iter=reg_Channel.find(fd);
+    if(iter==reg_Channel.end())
+        std::cout<<"No channel in this map!";
+    reg_Channel.erase(iter);
+    assert(epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd,nullptr)==0);
+    reg_nums--;
 }
-void Poller::poll(std::vector<ChannelPtr> &active)
+void Poller::poll(std::vector<Channel *> &active)
 {
     if(reg_nums==0)
         return;
-    assert(!isPolling_);
     isPolling_=true;
     int n=epoll_wait(epoll_fd,&(*return_events.begin()),reg_nums,-1);
     assert(n>=0);
@@ -101,7 +77,14 @@ void Poller::poll(std::vector<ChannelPtr> &active)
         else{
             Channel* ch=(Channel*)event.data.ptr;
             ch->setevents(event.events);
-            active.emplace_back(ch);
+            active.push_back(ch);
+            event.events=ch->getevents();
+            //assert(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,ch->getfd(),&event)==0);
+            if(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,ch->getfd(),&event)!=0)
+            {
+                std::cout<<ch->getfd()<<std::endl;
+                std::cout<<fcntl(ch->getfd(),F_GETFL)<<std::endl;
+            }
         }
     }
 }
@@ -113,6 +96,6 @@ void Poller::Wakeup()
         return;
     }
     char c='1';
-    assert(write(wake_fd[1],(void*)&c,1)==1);
+    assert(write(wake_fd[1],static_cast<void*>(&c),1)==1);
     return;
 }

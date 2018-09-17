@@ -6,16 +6,35 @@
 #include <string.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#define TOVOIDPTR(p) static_cast<void*>(p)
+#define TOCHARPTR(p) static_cast<char*>(p)
 class Buffer
 {
 public:
-    Buffer();
+    //"get" means copy,not move.Data will remain in the buffer after action.
+    //"take" means move.
+    Buffer(size_t bufsize=1024);
+    ~Buffer()=default;
     char* getdata(int32_t length);
     char* takedata(int32_t length);
+    int getdata(char* buf,int32_t length);
+    int takedata(char* buf,int32_t length);
     void wirtein(const char* src,int32_t length);
     int32_t readfd(int fd);
     int32_t writefd(int fd,int32_t length);
+    int32_t getSize(){return readbytes;}
 private:
+    void UpdateIndex()
+    {
+        char* temp=buffer_.data();
+        if(readindex>maxsize/2)
+        {
+            memmove(TOVOIDPTR(temp),TOVOIDPTR(temp+readindex),readbytes);
+            memset(TOVOIDPTR(temp+readindex),'\0',readbytes);
+            readindex=0;
+            writeindex=readindex+readbytes;
+        }
+    }
     int32_t maxsize;
     int32_t readindex;
     int32_t readbytes;

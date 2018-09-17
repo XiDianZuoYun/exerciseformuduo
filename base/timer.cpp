@@ -1,33 +1,36 @@
 #include "timer.h"
-
-timer::timer():timerfd(timerfd_create(CLOCK_MONOTONIC,0))
+#include "eventloop.h"
+timer::timer(EventLoop* lp):timerfd(timerfd_create(CLOCK_MONOTONIC,TFD_NONBLOCK)),
+    loop(lp)
 {
     assert(timerfd!=-1);
+    timer_channel=new Channel(timerfd,EPOLLIN|EPOLLERR|EPOLLET,lp,CHANNEL_TIMER);
+    if(lp!=nullptr)
+        lp->updateChannel(timer_channel);
 }
-void timer::Init(long seconds, bool iscontinue)
+void timer::Init(float seconds, bool iscontinue)
 {
-    long n_sec=seconds-(int)seconds;
-    long sec=(float)((int)seconds);
-    itimerspec new_value,old_value;
-    new_value.it_value.tv_nsec=n_sec*10000000;
+    long n_sec=static_cast<long>(seconds-static_cast<int>(seconds));
+    long sec=static_cast<long>(seconds);
+    itimerspec new_value;
+    new_value.it_value.tv_nsec=long(n_sec*10000000);
     new_value.it_value.tv_sec=sec;
     if(iscontinue)
     {
         new_value.it_interval.tv_sec=new_value.it_value.tv_sec;
         new_value.it_interval.tv_nsec=new_value.it_value.tv_nsec;
+        repeatclock.tv_nsec=n_sec;
+        repeatclock.tv_sec=sec;
+    }else{
+        new_value.it_interval.tv_sec=0;
+        new_value.it_interval.tv_nsec=0;
+        repeatclock.tv_nsec=n_sec;
+        repeatclock.tv_sec=sec;
     }
-    assert(timerfd_settime(timerfd,0,&new_value,&old_value)==0);
+    assert(timerfd_settime(timerfd,0,&new_value,nullptr)==0);
     assert(clock_gettime(CLOCK_MONOTONIC,&timeclock)==0);
     timeclock.tv_nsec+=n_sec;
     timeclock.tv_sec+=sec;
-}
-void timer::updateTimer()
-{
-    itimerspec temp;
-    assert(timerfd_gettime(timerfd,&temp)==0);
-    assert(clock_gettime(CLOCK_MONOTONIC,&timeclock)==0);
-    timeclock.tv_nsec+=temp.it_value.tv_nsec;
-    timeclock.tv_sec+=temp.it_value.tv_sec;
 }
 void timer::stopTimer()
 {
@@ -36,4 +39,5 @@ void timer::stopTimer()
 timer::~timer()
 {
     stopTimer();
+    delete timer_channel;
 }

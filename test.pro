@@ -32,7 +32,22 @@ SOURCES += \
     threadpool.cpp \
     main.cpp \
     buffer.cpp \
-    Tcpsocket.cpp
+    Tcpsocket.cpp \
+    base/acceptor.cpp \
+    base/buffer.cpp \
+    base/channel.cpp \
+    base/eventloop.cpp \
+    base/poller.cpp \
+    base/socket.cpp \
+    base/tcpconnection.cpp \
+    base/timer.cpp \
+    unitest/buffertest.cpp \
+    unitest/looptest.cpp \
+    unitest/pollertest.cpp \
+    unitest/sockettests.cpp \
+    unitest/testforchannel.cpp \
+    unitest/TESTFORTIMER.cpp \
+    unitest/timertest.cpp
 
 HEADERS += \
     POLLER.hpp \
@@ -43,7 +58,15 @@ HEADERS += \
     MUTEXLOCK.hpp \
     CONDITION.hpp \
     buffer.hpp \
-    Tcpsocket.h
+    Tcpsocket.h \
+    base/acceptor.h \
+    base/buffer.h \
+    base/channel.h \
+    base/eventloop.h \
+    base/poller.h \
+    base/socket.h \
+    base/tcpconnection.h \
+    base/timer.h
 
 unix {
     target.path = /usr/lib

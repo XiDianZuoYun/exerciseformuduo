@@ -9,30 +9,27 @@
 #include <assert.h>
 #include <string.h>
 #include "channel.h"
-#define POLLER_DEBUG
+class EventLoop;
 class Poller
 {
 private:
+    int epoll_fd;
     bool isPolling_;
     typedef std::shared_ptr<Channel> ChannelPtr;
-    std::map<int,ChannelPtr> reg_Channel;
-    int epoll_fd;
+    std::map<int,Channel*> reg_Channel;
     int wake_fd[2];
     int reg_nums;
     std::vector<epoll_event> return_events;
-    //EventLoop* loop
+    EventLoop* loop;
 public:
-    Poller();
+    Poller(int maxevents=1024,EventLoop* __loop=nullptr);
     ~Poller();
-    void poll(/*timeclock* sec,*/std::vector<ChannelPtr>& active);
-    void remove_channel(ChannelPtr _channel);
-    void update_channel(ChannelPtr _channel);
-#ifdef POLLER_DEBUG
-    void AddFD(int fd);
-    void removeFD(int fd);
-    void Poll_debug();
-#endif
+    void poll(/*timeclock* sec,*/std::vector<Channel*>& active);
     void remove_channel(Channel* _channel);
+    void remove_channel(int fd)
+    {
+        reg_Channel.erase(fd);
+    }
     void update_channel(Channel* _channel);
     void Wakeup();
 };
