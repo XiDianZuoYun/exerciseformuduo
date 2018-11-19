@@ -1,7 +1,11 @@
 #include "eventloop.h"
 #include <iostream>
 static __thread EventLoop* _loop=nullptr;
-EventLoop::EventLoop(int maxevents):poller(new Poller(maxevents,this)),acceptor(new Acceptor(this))
+#ifndef ALLOCATE(TYPE)
+#define ALLOCATE(TYPE) new(malloc(sizeof(TYPE)))
+#endif
+EventLoop::EventLoop(int maxevents):poller(ALLOCATE(Poller) Poller(maxevents,this)),
+    acceptor(ALLOCATE(Acceptor) Acceptor(this))
 {
     assert(_loop==nullptr);
     _loop=this;

@@ -43,3 +43,9 @@ void Channel::handle()
         errorCallback();
     }
 }
+void Channel::unregistered()
+{
+    if(!loop)
+        return;
+    loop->RemoveChannel(this);
+}

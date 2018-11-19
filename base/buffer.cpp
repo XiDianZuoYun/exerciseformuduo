@@ -1,5 +1,7 @@
 #include "buffer.h"
-
+#define DEBUG
+#define CHECK(length) if(length<=0) \
+    throw CommonException("Invalid length!",CommonException.ErrType::BUFFERErr);
 Buffer::Buffer(size_t bufsize):buffer_(bufsize,'\0'),maxsize(1024),readindex(0),readbytes(0),
   writeindex(0),mutex_()
 {
@@ -8,7 +10,11 @@ Buffer::Buffer(size_t bufsize):buffer_(bufsize,'\0'),maxsize(1024),readindex(0),
 //copy,not move
 char* Buffer::getdata(int32_t length)
 {
+#ifdef DEBUG
     assert(length>0);
+#else
+    CHECK(length);
+#endif
     //std::unique_lock<std::mutex> lockguard(mutex_);
     char* temp=buffer_.data();
     char* ret=TOCHARPTR(malloc(length*sizeof(char)));
@@ -37,6 +43,11 @@ char* Buffer::takedata(int32_t length)
 }
 int32_t Buffer::takedata(char* buf,int32_t length)
 {
+#ifdef DEBUG
+    assert(length>0);
+#else
+    CHECK(length);
+#endif
     int len=length<readbytes?length:readbytes;
     memcpy(TOVOIDPTR(buf),TOVOIDPTR(buffer_.data()),len);
     readindex=readindex+len;
@@ -45,7 +56,11 @@ int32_t Buffer::takedata(char* buf,int32_t length)
 }
 void Buffer::wirtein(const char *src, int32_t length)
 {
-    assert(length>=0);
+#ifdef DEBUG
+    assert(length>0);
+#else
+    CHECK(length);
+#endif
     //std::unique_lock<std::mutex> lockguard(mutex_);
     if(length==0)
         return;
@@ -91,6 +106,10 @@ int32_t Buffer::writefd(int fd, int32_t length)
         n=write(fd,(void*)data,readbytes);
     else
         n=write(fd,(void*)data,length);
+#ifdef DEBUG
     assert(n>=0);
+#else
+    CHECK_COND(n>=0,"writefd has a failure",CommonException.FILEEXCErr);
+#endif
     return n;
 }

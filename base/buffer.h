@@ -6,6 +6,8 @@
 #include <string.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#include <jemalloc/jemalloc.h>
+#include "commonexception.h"
 #define TOVOIDPTR(p) static_cast<void*>(p)
 #define TOCHARPTR(p) static_cast<char*>(p)
 class Buffer

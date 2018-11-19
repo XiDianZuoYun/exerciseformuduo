@@ -28,6 +28,7 @@ public:
         if(r_events==EPOLLERR)
             std::cout<<"THERE IS AN ERROR!!";
     }
+    void unregistered();
 private:
     int fd_;
     unsigned int events_;

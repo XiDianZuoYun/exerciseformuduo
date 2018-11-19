@@ -1,6 +1,12 @@
 #include "poller.h"
+#ifndef DEBUG
+#define DEBUG
+#endif
+#ifdef DEBUG
 #define POLLER_DEBUG
+#endif
 #include <fcntl.h>
+#include "commonexception.h"
 Poller::Poller(int maxevents, EventLoop *__loop):epoll_fd(epoll_create(maxevents)),
     isPolling_(false),reg_nums(0),loop(__loop)
 {
@@ -12,7 +18,11 @@ Poller::Poller(int maxevents, EventLoop *__loop):epoll_fd(epoll_create(maxevents
     temp.data.fd=wake_fd[0];
     temp.events|=EPOLLIN;
     temp.events|=EPOLLET;
+#ifdef DEBUG
     assert(epoll_ctl(epoll_fd,EPOLL_CTL_ADD,wake_fd[0],&temp)==0);
+#else
+    CHECK_COND(epoll_ctl(epoll_fd,EPOLL_CTL_ADD,wake_fd[0],&temp)==0,"Make poller failed:",CommonException::POLLERErr);
+#endif
 }
 //This function can only be called by EventLoop.
 Poller::~Poller()
@@ -33,7 +43,11 @@ void Poller::update_channel(Channel *_channel)
         temp.events|=_channel->getevents();
         temp.data.ptr=(void*)_channel;
         reg_Channel[fd]=_channel;
+#ifdef DEBUG
         assert(epoll_ctl(epoll_fd,EPOLL_CTL_ADD,fd,&temp)==0);
+#else
+        CHECK_COND(epoll_ctl(epoll_fd,EPOLL_CTL_ADD,fd,&temp)==0,"Failure to register fd",CommonException::POLLERErr);
+#endif
         reg_nums++;
         if(return_events.capacity()<=reg_nums)
             return_events.resize(reg_nums*2);
@@ -47,7 +61,11 @@ void Poller::update_channel(Channel *_channel)
         temp.events|=EPOLLET;
         temp.events|=_channel->getevents();
         temp.data.ptr=static_cast<void*>(_channel);
+#ifdef DEBUG
         assert(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,fd,&temp)==0);
+#else
+        CHECK_COND(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,fd,&temp)==0,"Failure to channge fd:",CommonException::POLLERErr);
+#endif
     }
 }
 void Poller::remove_channel(Channel *_channel)
@@ -59,7 +77,11 @@ void Poller::remove_channel(Channel *_channel)
     if(iter==reg_Channel.end())
         std::cout<<"No channel in this map!";
     reg_Channel.erase(iter);
+#ifdef DEBUG
     assert(epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd,nullptr)==0);
+#else
+    CHECK_COND(epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd,nullptr)==0,"Failure to unregister fd",CommonException::POLLERErr);
+#endif
     reg_nums--;
 }
 void Poller::poll(std::vector<Channel *> &active)
@@ -68,7 +90,11 @@ void Poller::poll(std::vector<Channel *> &active)
         return;
     isPolling_=true;
     int n=epoll_wait(epoll_fd,&(*return_events.begin()),reg_nums,-1);
+#ifdef DEBUG
     assert(n>=0);
+#else
+    CHECK_COND(n>=0,"Epoll_wait error:",CommonException::POLLERErr);
+#endif
     for(int i=0;i<n;++i)
     {
         auto& event=return_events[i];
@@ -79,12 +105,16 @@ void Poller::poll(std::vector<Channel *> &active)
             ch->setevents(event.events);
             active.push_back(ch);
             event.events=ch->getevents();
-            //assert(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,ch->getfd(),&event)==0);
-            if(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,ch->getfd(),&event)!=0)
-            {
-                std::cout<<ch->getfd()<<std::endl;
-                std::cout<<fcntl(ch->getfd(),F_GETFL)<<std::endl;
-            }
+#ifdef DEBUG
+            assert(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,ch->getfd(),&event)==0);
+#else
+            CHECK_COND(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,ch->getfd(),&event)==0,"Failure to register fd",CommonException::POLLERErr);
+#endif
+//            if(epoll_ctl(epoll_fd,EPOLL_CTL_MOD,ch->getfd(),&event)!=0)
+//            {
+//                std::cout<<ch->getfd()<<std::endl;
+//                std::cout<<fcntl(ch->getfd(),F_GETFL)<<std::endl;
+//            }
         }
     }
 }

@@ -21,6 +21,7 @@ public:
     CommonException()=delete;
     CommonException(const CommonException& other)=default;
     CommonException& operator=(const CommonException& other)=delete;
+    int32_t GetErrorCode(){return error_code;}
     virtual const char* what() const noexcept override
     {
         return msg.c_str();
@@ -28,6 +29,7 @@ public:
 private:
     ErrType etype;
     std::string msg;
+    int32_t error_code;
 };
 
 #endif // COMMONEXCEPTION_H

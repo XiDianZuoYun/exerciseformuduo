@@ -32,6 +32,10 @@ public:
     }
 private:
     void GetoBuf();
+    void defa_callback(char*)
+    {
+        return;
+    }
     inline void InitChannel();
     Socket* sock;
     Buffer* buf;

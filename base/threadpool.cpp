@@ -1,10 +1,4 @@
 #include "threadpool.h"
-static void ThreadPool::Thread_run(void *arg)
-{
-    ThreadPool* tp=static_cast<ThreadPool*>(arg);
-    tp->run_task();
-    return static_cast<void*>(0);
-}
 ThreadPool::ThreadPool():isplaying(false),quit(false),mutex_(),cond_t()
 {
     for(int i=0;i<MAXTHREAD;++i)
@@ -12,7 +6,7 @@ ThreadPool::ThreadPool():isplaying(false),quit(false),mutex_(),cond_t()
 }
 ThreadPool::~ThreadPool()
 {
-    this->Quit();
+    Quit();
 }
 void ThreadPool::Start()
 {
@@ -34,7 +28,7 @@ void ThreadPool::Quit()
     this->isplaying=false;
     cond_t.notify_all();
 }
-void ThreadPool::push_task(task_func &tf, void *data)
+void ThreadPool::push_task(Task::task_func &tf, void *data)
 {
     std::lock_guard<std::mutex> mtx(mutex_);
     taskqueue.emplace(tf,data);
@@ -51,7 +45,7 @@ void ThreadPool::run_task()
         t.func(t.data);
     }
 }
-void ThreadPool::Get_Task()
+Task ThreadPool::Get_Task()
 {
     std::unique_lock<std::mutex> mtx(mutex_);
     while(taskqueue.empty()&&isplaying)

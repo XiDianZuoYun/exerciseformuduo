@@ -1,8 +1,8 @@
 #ifndef ACCEPTOR_H
 #define ACCEPTOR_H
 #include <unordered_map>
-#include <memory>
 #include <iostream>
+#include <jemalloc/jemalloc.h>
 #include "channel.h"
 #include "socket.h"
 #include "tcpconnection.h"

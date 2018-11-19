@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <unordered_map>
+#include <jemalloc/jemalloc.h>
 #include <memory>
 #include <assert.h>
 #include "timer.h"

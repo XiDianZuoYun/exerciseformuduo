@@ -16,19 +16,20 @@ TcpConnection::TcpConnection(Socket* sock__,size_t bufsize,EventLoop* lo):sock(s
 }
 TcpConnection::~TcpConnection() noexcept
 {
-    sock->~Socket();
-    buf->~Buffer();
-    //If this object was registered in a loop-object,loop will remove completely remove this object
+    delete sock;
+    delete buf;
+    //If this object was registered in a loop-object,loop will completely remove this object
     // and its channel object.
     if(loop!=nullptr)
         loop->Remove_Connection(this);
     else
-        connect_channel->~Channel();
+        delete connect_channel;
 }
 void TcpConnection::GetoBuf()
 {
-    int len=buf->readfd(sock->getfd());
+    int32_t len=buf->readfd(sock->getfd());
     assert(len>=0);
+    MessageCB(buf->getdata(len));
 }
 inline void TcpConnection::InitChannel()
 {

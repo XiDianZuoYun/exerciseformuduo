@@ -2,7 +2,7 @@
 #include <error.h>
 #include "commonexception.h"
 
-CommonException::CommonException(const std::string& msg_,ErrType type) throw():msg(msg_),etype(type)
+CommonException::CommonException(const std::string& msg_,ErrType type) throw():msg(msg_),etype(type),error_code(errno)
 {
     switch (type) {
     case ErrType::SOCKETErr:
