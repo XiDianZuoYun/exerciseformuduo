@@ -29,7 +29,7 @@ void TcpConnection::GetoBuf()
 {
     int32_t len=buf->readfd(sock->getfd());
     assert(len>=0);
-    MessageCB(buf->getdata(len));
+    MessageCB(buf,this);
 }
 inline void TcpConnection::InitChannel()
 {

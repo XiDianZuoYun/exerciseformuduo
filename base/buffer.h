@@ -2,6 +2,7 @@
 #define BUFFER_H
 #include <vector>
 #include <mutex>
+#include <utility>
 #include <assert.h>
 #include <string.h>
 #include <sys/uio.h>
@@ -21,6 +22,7 @@ public:
     char* takedata(int32_t length);
     int getdata(char* buf,int32_t length);
     int takedata(char* buf,int32_t length);
+    std::pair<const char*,int32_t> readdata();
     void wirtein(const char* src,int32_t length);
     int32_t readfd(int fd);
     int32_t writefd(int fd,int32_t length);

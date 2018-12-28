@@ -7,15 +7,18 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/sendfile.h>
 #include<arpa/inet.h>
+#include "buffer.h"
 #define SOCKET_UDP 0
 #define SOCKET_TCP 1
+class Acceptor;
 class Socket
 {
 public:
     Socket(const char* type="TCP");
     ~Socket(){
-        close(sock_fd);
+        Close();
         delete(peer_addr);
     }
     Socket(int32_t fd,sockaddr_in *addr=nullptr,const char* type="TCP");
@@ -29,11 +32,30 @@ public:
     void Connect(const char* ip, uint16_t port);
     int32_t Accept(struct sockaddr_in* peer);
     Socket* Accept();
-    int32_t Send(/*const Buffer& buf*/unsigned char* buf,int32_t buf_len);
-    int32_t Recv(/*const Buffer& buf*/unsigned char* buf,int32_t& buf_len);
-    int32_t Sendto(/*const Buffer& buf*/unsigned char* buf, size_t buf_len, const char* ip, uint16_t port);
-    int32_t Recvfrom(/*const Buffer& buf*/unsigned char* buf, size_t &buf_len, char *ip, int32_t &port);
+    int32_t Send( char* buf,int32_t buf_len);
+    int32_t Send(Buffer& buf,int32_t buf_len)
+    {
+        return Send(buf.getdata(buf_len),buf_len);
+    }
+    int32_t Recv( char* buf,int32_t& buf_len);
+    int32_t Recv(Buffer& buf)
+    {
+        return buf.readfd(sock_fd);
+    }
+    int32_t Sendto( char* buf, size_t buf_len, const char* ip, uint16_t port);
+    int32_t Sendto(Buffer& buf,size_t buf_len,const char* ip,uint16_t port)
+    {
+        return Sendto(buf.getdata(buf_len),buf_len,ip,port);
+    }
+    int32_t Recvfrom( char* buf, size_t &buf_len, char *ip, uint16_t &port);
     int32_t getfd(){return sock_fd;}
+    void Close(){
+        assert(close(sock_fd)==0);
+    }
+    ssize_t SendFile(int outfd,int infd,off_t* offset,size_t count)
+    {
+        return sendfile(outfd,infd,offset,count);
+    }
 private:
     int32_t sock_fd;
     sockaddr_in *peer_addr=nullptr;

@@ -13,7 +13,7 @@ public:
     TcpConnection(Socket* sock,size_t bufsize,EventLoop* lo);
     ~TcpConnection();
     typedef std::function<void ()> functor;
-    typedef std::function<void (char*)> CallBack;
+    typedef std::function<void (Buffer*, TcpConnection*)> CallBack;
     void setMessageCallback(CallBack& func)
     {
         MessageCB=func;
@@ -26,9 +26,24 @@ public:
     {
         return buf->takedata(buf_,length);
     }
+    int32_t Send(char* buf,int length)
+    {
+        return sock->Send(buf,length);
+    }
+    int32_t Send(Buffer &buf,int buf_len)
+    {
+        return sock->Send(buf,buf_len);
+    }
     Socket* getSock() const
     {
         return sock;
+    }
+    void Disconnect(){
+        this->sock->Close();
+    }
+    ssize_t SendFile(int outfd,int infd,off_t* offset,size_t count)
+    {
+        return sock->SendFile(outfd,infd,offset,count);
     }
 private:
     void GetoBuf();

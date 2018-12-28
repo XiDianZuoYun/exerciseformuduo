@@ -1,4 +1,5 @@
 #include "socket.h"
+#include "acceptor.h"
 #include <QDebug>
 #define SOCKTYPE(str) !strcmp(str,"TCP")||!strcmp(str,"tcp")?SOCKET_TCP:SOCKET_UDP
 Socket::Socket(const char *type)
@@ -77,7 +78,7 @@ void Socket::SetSendBuf(int32_t val)
 {
      assert(setsockopt(sock_fd,SOL_SOCKET,SO_SNDBUF,&val,sizeof(int32_t))==0);
 }
-int32_t Socket::Send(unsigned char *buf, int32_t buf_len)
+int32_t Socket::Send( char *buf, int32_t buf_len)
 {
     assert(sock_type==SOCKET_TCP);
     assert(buf_len>0&&buf!=nullptr);
@@ -92,14 +93,14 @@ int32_t Socket::Send(unsigned char *buf, int32_t buf_len)
     std::cout<<"We have sended "<<buf_len-left<<"bytes";
     return buf_len-left;
 }
-int32_t Socket::Recv(unsigned char *buf, int32_t &buf_len)
+int32_t Socket::Recv( char *buf, int32_t &buf_len)
 {
     assert(sock_type==SOCKET_TCP);
     assert(buf_len>0&&buf!=nullptr);
     buf_len=recv(sock_fd,(void*)buf,buf_len,0);
     return buf_len;
 }
-int32_t Socket::Sendto(unsigned char *buf, size_t buf_len, const char *ip, uint16_t port)
+int32_t Socket::Sendto( char *buf, size_t buf_len, const char *ip, uint16_t port)
 {
     assert(sock_type==SOCKET_UDP);
     assert(buf!=nullptr&&buf_len>0);
@@ -113,7 +114,7 @@ int32_t Socket::Sendto(unsigned char *buf, size_t buf_len, const char *ip, uint1
     int32_t len=sendto(sock_fd,(void*)buf,buf_len,0,(sockaddr*)&temp,sizeof(sockaddr_in));
     assert(len>=0);
 }
-int32_t Socket::Recvfrom(unsigned char *buf, size_t &buf_len, char *ip, int32_t& port)
+int32_t Socket::Recvfrom( char *buf, size_t &buf_len, char *ip, uint16_t &port)
 {
     assert(sock_type==SOCKET_UDP);
     sockaddr_in temp;

@@ -1,6 +1,7 @@
 #ifndef ACCEPTOR_H
 #define ACCEPTOR_H
 #include <unordered_map>
+#include <queue>
 #include <iostream>
 #include <jemalloc/jemalloc.h>
 #include "channel.h"
@@ -44,6 +45,7 @@ private:
     Channel *read_channel;
     uint16_t port;
     std::unordered_map<int32_t,Socket*> reg_sock;
+    //std::queue<Socket*> freePool;
     EventLoop* loop;
 };
 #endif // ACCEPTOR_H

@@ -113,3 +113,8 @@ int32_t Buffer::writefd(int fd, int32_t length)
 #endif
     return n;
 }
+std::pair<const char*,int32_t> Buffer::readdata()
+{
+    const char* temp=buffer_.data()+readindex;
+    return std::pair<const char*,int32_t>(temp,readbytes);
+}
