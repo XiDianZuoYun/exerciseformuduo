@@ -38,6 +38,7 @@ void Logger::Log(const std::string &logstr, level l)
 void* Logger::WriteInfile(void* permanent)
 {
     unsigned long flag=(unsigned long)permanent;
+    //I don't know why, there is always a race condition here, I can only do it with sleep.
     sleep(1);
     pthread_mutex_lock(&mutex);
     do
