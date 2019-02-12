@@ -24,6 +24,10 @@ public:
         delete in_socket;
         delete read_channel;
     }
+    void setCallBack(TcpConnection::CallBack c)
+    {
+        default_CB=c;
+    }
     void Bind(uint16_t Port);
     void Listen(int backlog=100){in_socket->Listen(backlog);}
     uint16_t GetPort(){return port;}
@@ -32,6 +36,7 @@ public:
     Acceptor& operator=(const Acceptor& another) = delete;
     void ClearAllSock();
 private:
+    TcpConnection::CallBack default_CB;
     void Accept_socket();
     void Accept_connection();
     void init_Channel()

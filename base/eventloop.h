@@ -23,6 +23,10 @@ public:
     //nocopyable
     EventLoop(const EventLoop& other)=delete;
     EventLoop& operator =(const EventLoop& other)=delete;
+    void setDefaultCallback(TcpConnection::CallBack c)
+    {
+        acceptor->setCallBack(c);
+    }
     void Bind_Port(uint16_t port)
     {
         acceptor->Bind(port);

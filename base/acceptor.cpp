@@ -23,8 +23,10 @@ void Acceptor::Accept_socket()
 void Acceptor::Accept_connection()
 {
     TcpConnection* new_connection=ALLOCATE(TcpConnection) TcpConnection(in_socket->Accept(),1024,loop);
+    new_connection->setMessageCallback(default_CB);
     loop->UpdateNewConnection(new_connection);
     reg_sock[new_connection->getSock()->getfd()]=new_connection->getSock();
+
 }
 void Acceptor::ClearAllSock()
 {
