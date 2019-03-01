@@ -38,6 +38,7 @@ char* Buffer::takedata(int32_t length)
 {
     char* ret=getdata(length);
     readindex=readindex+(length>readbytes?readbytes:length);
+    readbytes=readbytes-length>0?readbytes-length:0;
     UpdateIndex();
     return ret;
 }
@@ -51,6 +52,7 @@ int32_t Buffer::takedata(char* buf,int32_t length)
     int len=length<readbytes?length:readbytes;
     memcpy(TOVOIDPTR(buf),TOVOIDPTR(buffer_.data()),len);
     readindex=readindex+len;
+    readbytes=readbytes-len;
     UpdateIndex();
     return len;
 }
@@ -111,6 +113,9 @@ int32_t Buffer::writefd(int fd, int32_t length)
 #else
     CHECK_COND(n>=0,"writefd has a failure",CommonException.FILEEXCErr);
 #endif
+    readindex+=n;
+    readbytes-=n;
+    UpdateIndex();
     return n;
 }
 std::pair<const char*,int32_t> Buffer::readdata()

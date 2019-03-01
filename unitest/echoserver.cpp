@@ -1,19 +1,16 @@
-#include "base/eventloop.h"
+#include "base/tcpserver.h".h"
 #include "base/buffer.h"
 #include "base/tcpconnection.h"
 auto echo=[&](Buffer* b,TcpConnection* t)
 {
-    char* temp=b->takedata(b->getSize());
-    t->Send(temp,b->getSize());
-    free(static_cast<void*>(temp));
+    t->Send(*b,b->getSize());
 };
 int main()
 {
     TcpConnection::CallBack callback=echo;
-    EventLoop loop(1024);
-    loop.Bind_Port(8888);
-    loop.setDefaultCallback(callback);
-    loop.loop();
-    loop.stop();
+    TcpServer TS(1024,1000,8888);
+    TS.SetDefaultCallback(callback);
+    TS.Run();
+    TS.Stop();
     return 0;
 }

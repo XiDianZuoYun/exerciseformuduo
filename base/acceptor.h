@@ -8,11 +8,12 @@
 #include "socket.h"
 #include "tcpconnection.h"
 class EventLoop;
+class TcpServer;
 class Acceptor
 {
 public:
     typedef Channel::functor functor;
-    Acceptor(EventLoop* __loop):in_socket(new Socket("TCP")),loop(__loop)
+    Acceptor(TcpServer* ts):in_socket(new Socket("TCP")),TcpServer_(ts)
     {
         init_Channel();
     }
@@ -34,7 +35,6 @@ public:
     Channel* getChannel(){return read_channel;}
     Acceptor(const Acceptor& other)=delete;
     Acceptor& operator=(const Acceptor& another) = delete;
-    void ClearAllSock();
 private:
     TcpConnection::CallBack default_CB;
     void Accept_socket();
@@ -48,9 +48,8 @@ private:
     }
     Socket *in_socket;
     Channel *read_channel;
+    TcpServer* TcpServer_;
     uint16_t port;
-    std::unordered_map<int32_t,Socket*> reg_sock;
     //std::queue<Socket*> freePool;
-    EventLoop* loop;
 };
 #endif // ACCEPTOR_H

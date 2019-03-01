@@ -5,12 +5,13 @@
 #include "socket.h"
 #include "buffer.h"
 #include "channel.h"
+class TcpServer;
 class EventLoop;
 class TcpConnection
 {
 public:
-    TcpConnection(int sock_fd,sockaddr_in* peer_addr,size_t bufsize,EventLoop* loop__);
-    TcpConnection(Socket* sock,size_t bufsize,EventLoop* lo);
+    TcpConnection(int sock_fd, sockaddr_in* peer_addr, size_t bufsize, TcpServer *T);
+    TcpConnection(Socket* sock,size_t bufsize,TcpServer* T);
     ~TcpConnection();
     typedef std::function<void ()> functor;
     typedef std::function<void (Buffer*, TcpConnection*)> CallBack;
@@ -26,14 +27,8 @@ public:
     {
         return buf->takedata(buf_,length);
     }
-    int32_t Send(char* buf,int length)
-    {
-        return sock->Send(buf,length);
-    }
-    int32_t Send(Buffer &buf,int buf_len)
-    {
-        return sock->Send(buf,buf_len);
-    }
+    int32_t Send(char* buf,int length);
+    int32_t Send(Buffer &buf,int buf_len);
     Socket* getSock() const
     {
         return sock;
@@ -45,8 +40,10 @@ public:
     {
         return sock->SendFile(outfd,infd,offset,count);
     }
+    friend class TcpServer;
 private:
     void GetoBuf();
+    void WritetoSock();
     void defa_callback(char*)
     {
         return;
@@ -54,9 +51,10 @@ private:
     inline void InitChannel();
     Socket* sock;
     Buffer* buf;
+    Buffer* Wbuf;
     CallBack MessageCB;
     Channel* connect_channel;
-    EventLoop* loop;
+    TcpServer* TcpServer_;
 };
 
 #endif // TCPCONNECTION_H

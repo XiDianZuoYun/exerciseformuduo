@@ -15,7 +15,9 @@ public:
     Channel(int fd_,unsigned int reg_events,EventLoop* lp=nullptr,int8_t type=CHANNEL_SOCK);
     ~Channel();
     void enable_read();
+    void disable_read();
     void enable_write();
+    void disable_write();
     void setreadCallback(functor &func){readCallback=func;}
     void setWriteCallback(functor &func){writeCallback=func;}
     void setErrorCallback(functor &func){errorCallback=func;}

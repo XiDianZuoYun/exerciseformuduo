@@ -27,6 +27,7 @@ public:
     int32_t readfd(int fd);
     int32_t writefd(int fd,int32_t length);
     int32_t getSize(){return readbytes;}
+
 private:
     void UpdateIndex()
     {

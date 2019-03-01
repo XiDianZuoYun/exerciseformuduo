@@ -1,31 +1,26 @@
 #include "eventloop.h"
+#include "tcpserver.h"
 #include <iostream>
 static __thread EventLoop* _loop=nullptr;
 #ifndef ALLOCATE(TYPE)
 #define ALLOCATE(TYPE) new(malloc(sizeof(TYPE)))
 #endif
-EventLoop::EventLoop(int maxevents):poller(ALLOCATE(Poller) Poller(maxevents,this)),
-    acceptor(ALLOCATE(Acceptor) Acceptor(this))
+EventLoop::EventLoop(int maxevents, TcpServer *ts):poller(ALLOCATE(Poller) Poller(maxevents,this)),Tcpsever_(ts)
 {
     assert(_loop==nullptr);
     _loop=this;
-    assert((poller!=nullptr)&&(acceptor!=nullptr));
-    poller->update_channel(acceptor->getChannel());
+    assert((poller!=nullptr));
 }
 EventLoop::~EventLoop() noexcept
 {
     delete poller;
-    delete acceptor;
     for(auto &t:timer_tree)
         delete t.second;
-    for(auto &cn:Reg_connect)
-        delete cn.second;
 }
 void EventLoop::loop()
 {
     if(!looping)
         looping=true;
-    acceptor->Listen(1024);
     while (looping) {
         std::vector<Channel*> active;
         poller->poll(active);
@@ -50,6 +45,8 @@ void EventLoop::loop()
             else
                 timer_tree[timer.second->getTime()]=timer.second;
         }
+        if(Tcpsever_!=nullptr)
+            Tcpsever_->Clear_connection();
     }
 }
 void EventLoop::runAfter(Channel::functor &func,float time)

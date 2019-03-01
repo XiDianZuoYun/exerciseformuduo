@@ -15,9 +15,19 @@ void Channel::enable_read()
     events_|=EPOLLIN;
     update();
 }
+void Channel::disable_read()
+{
+    events_&=(~EPOLLIN);
+    update();
+}
 void Channel::enable_write()
 {
     events_|=EPOLLOUT;
+    update();
+}
+void Channel::disable_write()
+{
+    events_&=(~EPOLLOUT);
     update();
 }
 void Channel::update()
