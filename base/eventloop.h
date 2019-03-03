@@ -44,6 +44,7 @@ public:
     //Regist a new connection to this loop
     //Register a timer with the eventloop and specify its callback function and time
     void runAfter(Channel::functor &func,float time);
+    void runEvery(Channel::functor &func,float time);
     //End loop, wake up poller
     void stop(){
         looping=false;

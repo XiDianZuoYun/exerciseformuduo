@@ -3,6 +3,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <iostream>
+#include <string>
 #include <sys/socket.h>
 #include <assert.h>
 #include <unistd.h>
@@ -28,6 +29,7 @@ public:
     void SetReadBuf(int32_t val);
     void Block(bool block);
     void Bind(uint16_t port);
+    void Bind(std::string& ip,uint16_t port);
     void Listen(int backlogs=1024);
     void Connect(const char* ip, uint16_t port);
     int32_t Accept(struct sockaddr_in* peer);
@@ -60,6 +62,7 @@ private:
     int32_t sock_fd;
     sockaddr_in *peer_addr=nullptr;
     int32_t sock_type;
+    std::string ip;
     uint16_t port;
 };
 

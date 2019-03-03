@@ -19,6 +19,10 @@ public:
     {
         MessageCB=func;
     }
+    void setHupCallback(functor &fc)
+    {
+        connect_channel->setErrorCallback(fc);
+    }
     int32_t GetMessage(char* buf_,int length)
     {
         return buf->getdata(buf_,length);
@@ -44,11 +48,8 @@ public:
 private:
     void GetoBuf();
     void WritetoSock();
-    void defa_callback(char*)
-    {
-        return;
-    }
     inline void InitChannel();
+    void HupHandle();
     Socket* sock;
     Buffer* buf;
     Buffer* Wbuf;

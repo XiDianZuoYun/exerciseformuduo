@@ -40,6 +40,10 @@ public:
     {
         acceptor->setCallBack(CB);
     }
+    int GetConnectionNums()
+    {
+        return Con_map.size();
+    }
     void Run();
     void Stop();
 private:

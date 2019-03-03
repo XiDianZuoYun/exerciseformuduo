@@ -30,6 +30,7 @@ public:
         default_CB=c;
     }
     void Bind(uint16_t Port);
+    void Bind(std::string& ip,uint16_t Port);
     void Listen(int backlog=100){in_socket->Listen(backlog);}
     uint16_t GetPort(){return port;}
     Channel* getChannel(){return read_channel;}

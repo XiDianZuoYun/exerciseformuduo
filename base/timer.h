@@ -4,6 +4,7 @@
 #include <sys/timerfd.h>
 #include <assert.h>
 #include <functional>
+#include <string>
 #include "channel.h"
 class EventLoop;
 class timer
@@ -31,6 +32,8 @@ public:
             timeclock.tv_sec+=repeatclock.tv_sec;
         }
     }
+    //date should be written like "2018-11-04",time should be written like "21:05:20",ms is unsigned int.
+    inline void RunAt(std::string &date,std::string &time,unsigned int ms);
     void stopTimer();
     void handle(){timer_channel->handle();}
     Channel* getChannel() const{return timer_channel;}

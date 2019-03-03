@@ -26,15 +26,26 @@ void Socket::Bind(uint16_t port)
     struct sockaddr_in temp;
     bzero(&temp,sizeof(sockaddr_in));
     temp.sin_family=AF_INET;
-    temp.sin_addr.s_addr=htons(INADDR_ANY);
+    temp.sin_addr.s_addr=htonl(INADDR_ANY);
     temp.sin_port=htons(port);
     assert(bind(sock_fd,(sockaddr*)&temp,sizeof(sockaddr_in))==0);
     this->port=port;
 }
+void Socket::Bind(std::string &ip, uint16_t port)
+{
+    struct sockaddr_in temp;
+    bzero(&temp,sizeof(sockaddr_in));
+    temp.sin_family=AF_INET;
+    temp.sin_addr.s_addr=inet_addr(ip.c_str());
+    temp.sin_port=htons(port);
+    assert(bind(sock_fd,(sockaddr*)&temp,sizeof(sockaddr_in))==0);
+    this->port=port;
+    this->ip=ip;
+}
 void Socket::Listen(int backlogs)
 {
     assert(listen(sock_fd,backlogs)>=0);
-    qDebug()<<"listened";
+    //qDebug()<<"listened";
 }
 void Socket::Block(bool block)
 {

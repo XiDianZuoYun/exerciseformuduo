@@ -60,3 +60,14 @@ void EventLoop::runAfter(Channel::functor &func,float time)
     t->getChannel()->setreadCallback(func);
     poller->update_channel(t->getChannel());
 }
+void EventLoop::runEvery(Channel::functor &func, float time)
+{
+    timer* t=new timer(this);
+    t->Init(time,true);
+    timespec cur_t;
+    clock_gettime(CLOCK_MONOTONIC,&cur_t);
+    float current_time=static_cast<float>(cur_t.tv_sec+cur_t.tv_nsec*0.000000001);
+    timer_tree[current_time+time]=t;
+    t->getChannel()->setreadCallback(func);
+    poller->update_channel(t->getChannel());
+}

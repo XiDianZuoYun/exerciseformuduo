@@ -13,6 +13,11 @@ void Acceptor::Bind(uint16_t Port)
     this->port=Port;
     in_socket->Bind(Port);
 }
+void Acceptor::Bind(std::string &ip, uint16_t Port)
+{
+    this->port=Port;
+    in_socket->Bind(ip,Port);
+}
 //void Acceptor::Accept_socket()
 //{
 //    Socket* sock=in_socket->Accept();

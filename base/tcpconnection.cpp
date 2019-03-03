@@ -33,7 +33,7 @@ void TcpConnection::GetoBuf()
     assert(len>=0);
     if(len==0)
     {
-        TcpServer_->Remove_Connection(*this);
+        TcpServer_->Regist_Connection(this);
         return;
     }
     MessageCB(buf,this);
@@ -55,6 +55,13 @@ inline void TcpConnection::InitChannel()
     connect_channel->setreadCallback(func);
     functor wfunc=std::bind(&TcpConnection::WritetoSock,this);
     connect_channel->setWriteCallback(wfunc);
+    functor hfunc=std::bind(&TcpConnection::HupHandle,this);
+    connect_channel->setErrorCallback(hfunc);
+}
+void TcpConnection::HupHandle()
+{
+    if(TcpServer_)
+        TcpServer_->Regist_Connection(this);
 }
 int32_t TcpConnection::Send(Buffer &buf, int buf_len)
 {
