@@ -5,6 +5,9 @@ TcpServer::TcpServer(unsigned int maxconnections, int backlog, uint16_t port):lo
 {
     acceptor->Bind(port);
     loop_->updateChannel(acceptor->getChannel());
+    wheel.resize(8);
+    Channel::functor func=std::bind(&TcpServer::Clear_expire_connection,this);
+    loop_->runEvery(func,1);
 }
 TcpServer::~TcpServer() noexcept
 {
@@ -21,4 +24,15 @@ void TcpServer::Run()
 void TcpServer::Stop()
 {
     loop_->stop();
+}
+void TcpServer::Clear_expire_connection()
+{
+    step=(step+1)%8;
+    for(auto ptr:wheel[step])
+    {
+        int fd=ptr->getSock()->getfd();
+        conptr p=Con_map[fd];
+        this->Remove_Connection(p);
+    }
+    wheel[step].clear();
 }

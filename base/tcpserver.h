@@ -14,12 +14,16 @@ public:
     TcpServer(const TcpServer& other)=delete;
     ~TcpServer() noexcept;
     void UpdateConnection(conptr tc){
-        Con_map[tc->getSock()->getfd()]=tc;
+        int fd=tc->getSock()->getfd();
+        Con_map[fd]=tc;
+        wheel[step].push_back(tc);
         loop_->updateChannel(tc->connect_channel);
     }
     void Remove_Connection(TcpConnection& t)
     {
         int fd=t.getSock()->getfd();
+        if(Con_map.find(fd)==Con_map.end())
+            return;
         Con_map.erase(fd);
         loop_->RemoveChannel(fd);
     }
@@ -44,13 +48,18 @@ public:
     {
         return Con_map.size();
     }
+
     void Run();
     void Stop();
 private:
+    void Clear_expire_connection();
     Acceptor* acceptor;
     std::unordered_map<int,conptr> Con_map;
     std::queue<TcpConnection*> Unaviliable_connection;
     EventLoop* loop_;
+    using connectionslot=std::vector<conptr>;
+    std::vector<connectionslot> wheel;
+    int step=0;
     int backlog;
 };
 
