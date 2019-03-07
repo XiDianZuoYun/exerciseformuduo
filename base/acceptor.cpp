@@ -12,6 +12,7 @@ void Acceptor::Bind(uint16_t Port)
 {
     this->port=Port;
     in_socket->Bind(Port);
+    idlefd=::open("/dev/null",O_RDONLY|O_CLOEXEC);
 }
 void Acceptor::Bind(std::string &ip, uint16_t Port)
 {
@@ -26,7 +27,22 @@ void Acceptor::Bind(std::string &ip, uint16_t Port)
 //}
 void Acceptor::Accept_connection()
 {
+    Socket* sock=in_socket->Accept();
+    if(!sock&&errno==EMFILE)
+    {
+        close(idlefd);
+        int tempfd=::accept(in_socket->getfd(),nullptr,nullptr);
+        close(tempfd);
+        idlefd=::open("/dev/null",O_RDONLY|O_CLOEXEC);
+    }
     TcpConnection* new_connection=ALLOCATE(TcpConnection) TcpConnection(in_socket->Accept(),1024,TcpServer_);
     new_connection->setMessageCallback(default_CB);
     TcpServer_->UpdateConnection(TcpServer::conptr(new_connection));
+}
+void Acceptor::init_Channel()
+{
+    read_channel=new Channel(in_socket->getfd(),EPOLLIN|EPOLLERR);
+    std::cout<<in_socket->getfd();
+    functor func=std::bind(&Acceptor::Accept_connection,this);
+    read_channel->setreadCallback(func);
 }

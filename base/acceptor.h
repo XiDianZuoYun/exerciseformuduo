@@ -3,7 +3,9 @@
 #include <unordered_map>
 #include <queue>
 #include <iostream>
+#include <fcntl.h>
 #include <jemalloc/jemalloc.h>
+#include <errno.h>
 #include "channel.h"
 #include "socket.h"
 #include "tcpconnection.h"
@@ -38,15 +40,10 @@ public:
     Acceptor& operator=(const Acceptor& another) = delete;
 private:
     TcpConnection::CallBack default_CB;
+    int idlefd;
     void Accept_socket();
     void Accept_connection();
-    void init_Channel()
-    {
-        read_channel=new Channel(in_socket->getfd(),EPOLLIN|EPOLLERR);
-        std::cout<<in_socket->getfd();
-        functor func=std::bind(&Acceptor::Accept_connection,this);
-        read_channel->setreadCallback(func);
-    }
+    void init_Channel();
     Socket *in_socket;
     Channel *read_channel;
     TcpServer* TcpServer_;

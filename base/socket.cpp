@@ -78,8 +78,8 @@ Socket* Socket::Accept()
     bzero(temp,sizeof(sockaddr_in));
     bzero(temp,sizeof(sockaddr_in));
     int peer_socket=Accept(temp);
-    assert(peer_socket>=0||errno==EAGAIN);
-    return new Socket(peer_socket,temp,"TCP");
+    assert(peer_socket>=0||errno==EAGAIN||errno==EMFILE);
+    return peer_socket>0?new Socket(peer_socket,temp,"TCP"):nullptr;
 }
 void Socket::SetReadBuf(int32_t val)
 {
