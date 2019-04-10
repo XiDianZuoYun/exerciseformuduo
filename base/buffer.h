@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include <jemalloc/jemalloc.h>
+#include <jemalloc/include/jemalloc/jemalloc.h>
 #include "commonexception.h"
 #define TOVOIDPTR(p) static_cast<void*>(p)
 #define TOCHARPTR(p) static_cast<char*>(p)
@@ -25,6 +25,7 @@ public:
     std::pair<const char*,int32_t> readdata();
     void wirtein(const char* src,int32_t length);
     int32_t readfd(int fd);
+    int32_t setinbuf(char* buf,int32_t buflen);
     int32_t writefd(int fd,int32_t length);
     int32_t getSize(){return readbytes;}
 
@@ -39,6 +40,12 @@ private:
             readindex=0;
             writeindex=readindex+readbytes;
         }
+    }
+    void Expand(int32_t newsize)
+    {
+        maxsize<<=1;
+        maxsize=maxsize>newsize?maxsize:newsize;
+        buffer_.resize((size_t)maxsize);
     }
     int32_t maxsize;
     int32_t readindex;

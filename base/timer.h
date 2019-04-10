@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <functional>
 #include <string>
+#include <string.h>
 #include "channel.h"
 class EventLoop;
 class timer

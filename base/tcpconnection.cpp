@@ -36,7 +36,8 @@ void TcpConnection::GetoBuf()
         TcpServer_->Regist_Connection(this);
         return;
     }
-    MessageCB(buf,this);
+    if(MessageCB!=nullptr)
+        MessageCB(buf,this);
 }
 void TcpConnection::WritetoSock()
 {

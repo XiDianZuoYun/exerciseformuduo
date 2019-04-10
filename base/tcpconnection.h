@@ -56,6 +56,7 @@ private:
     CallBack MessageCB;
     Channel* connect_channel;
     TcpServer* TcpServer_;
+    void* Private_Data;
 };
 
 #endif // TCPCONNECTION_H

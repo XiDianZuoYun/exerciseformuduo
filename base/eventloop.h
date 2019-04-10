@@ -3,7 +3,7 @@
 #include <map>
 #include <vector>
 #include <unordered_map>
-#include <jemalloc/jemalloc.h>
+#include <jemalloc/include/jemalloc/jemalloc.h>
 #include <memory>
 #include <assert.h>
 #include "timer.h"
@@ -15,11 +15,13 @@
 #include <iostream>
 #endif
 class TcpServer;
+class UdpServer;
 class EventLoop
 {
 public:
     typedef std::shared_ptr<Channel> ChanPTR;
     EventLoop(int maxevents=1024,TcpServer* ts=nullptr);
+    EventLoop(int maxevents=1024,UdpServer* us=nullptr);
     ~EventLoop();
     //nocopyable
     EventLoop(const EventLoop& other)=delete;
@@ -54,7 +56,13 @@ private:
     //The following objects are owned by eventloop:a RB tree of timer file descriptor,a hash table that manage all the connection
     //accepted by this port,a poller that can manage an IO-multiplexing file descriptor,an acceptor binded on the user's port.
     std::map<float,timer*> timer_tree;
-    TcpServer* Tcpsever_;
+    union ServerPtr{
+    TcpServer* Tcpserver_;
+    UdpServer* Udpserver_;
+    };
+    //0:Udp 1:Tcp
+    int8_t protocol;
+    ServerPtr server_;
     Poller* poller;
     bool looping=false;
 };

@@ -5,8 +5,17 @@ static __thread EventLoop* _loop=nullptr;
 #ifndef ALLOCATE(TYPE)
 #define ALLOCATE(TYPE) new(malloc(sizeof(TYPE)))
 #endif
-EventLoop::EventLoop(int maxevents, TcpServer *ts):poller(ALLOCATE(Poller) Poller(maxevents,this)),Tcpsever_(ts)
+EventLoop::EventLoop(int maxevents, TcpServer *ts):poller(ALLOCATE(Poller) Poller(maxevents,this)),protocol(1)
 {
+
+    server_.Tcpserver_=ts;
+    assert(_loop==nullptr);
+    _loop=this;
+    assert((poller!=nullptr));
+}
+EventLoop::EventLoop(int maxevents,UdpServer* us):poller(ALLOCATE(Poller) Poller(maxevents,this)),protocol(0)
+{
+    server_.Udpserver_=us;
     assert(_loop==nullptr);
     _loop=this;
     assert((poller!=nullptr));
@@ -45,8 +54,8 @@ void EventLoop::loop()
             else
                 timer_tree[timer.second->getTime()]=timer.second;
         }
-        if(Tcpsever_!=nullptr)
-            Tcpsever_->Clear_connection();
+        if(server_.Tcpserver_!=nullptr)
+            server_.Tcpserver_->Clear_connection();
     }
 }
 void EventLoop::runAfter(Channel::functor &func,float time)

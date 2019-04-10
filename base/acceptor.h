@@ -4,7 +4,7 @@
 #include <queue>
 #include <iostream>
 #include <fcntl.h>
-#include <jemalloc/jemalloc.h>
+#include <jemalloc/include/jemalloc/jemalloc.h>
 #include <errno.h>
 #include "channel.h"
 #include "socket.h"

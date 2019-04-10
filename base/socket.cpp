@@ -131,7 +131,7 @@ int32_t Socket::Recvfrom( char *buf, size_t &buf_len, char *ip, uint16_t &port)
     sockaddr_in temp;
     bzero(&temp,sizeof(sockaddr_in));
     int32_t addr_len=sizeof(sockaddr_in);
-    int32_t len=recvfrom(sock_fd,(void*)buf,buf_len,0,(sockaddr*)&temp,(socklen_t*)&addr_len);
+    int32_t len=::recvfrom(sock_fd,(void*)buf,buf_len,0,(sockaddr*)&temp,(socklen_t*)&addr_len);
     assert(len>=0);
     assert(inet_ntop(AF_INET,(void*)&(temp.sin_addr),ip,sizeof(in_addr))!=nullptr);
     port=ntohs(temp.sin_port);

@@ -32,7 +32,7 @@ void TcpServer::Clear_expire_connection()
     {
         int fd=ptr->getSock()->getfd();
         conptr p=Con_map[fd];
-        this->Remove_Connection(p);
+        this->Remove_Connection(*p);
     }
     wheel[step].clear();
 }

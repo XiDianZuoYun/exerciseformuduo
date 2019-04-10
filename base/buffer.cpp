@@ -99,6 +99,13 @@ int32_t Buffer::readfd(int fd)
     }
     return n;
 }
+int32_t Buffer::setinbuf(char *buf, int32_t buflen)
+{
+    if(maxsize-writeindex<=buflen)
+        Expand(maxsize-writeindex);
+    buffer_.insert(buffer_.end(),buf,buf+buflen);
+    return buflen;
+}
 int32_t Buffer::writefd(int fd, int32_t length)
 {
     //std::unique_lock<std::mutex> lockguard(mutex_);
